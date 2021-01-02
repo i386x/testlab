@@ -1,0 +1,38 @@
+# Configuration for el82 virtual machine. In case of need, please edit
+# the lines below.
+
+# Path to image (absolute or relative to working directory):
+VMCFG_IMAGE="${HOME}/.vmtools/images/rhel-guest-image-8.2-290.x86_64.qcow2"
+
+# User:
+VMCFG_USER="root"
+
+# Password:
+VMCFG_PASSWORD="foobar"
+
+# Host:
+VMCFG_HOST="127.0.0.3"
+
+# Port:
+VMCFG_PORT="5432"
+
+# Path to file with private RSA key:
+VMCFG_ID_RSA="id_rsa"
+
+# Path to file with public RSA key:
+VMCFG_ID_RSA_PUB="id_rsa.pub"
+
+# RSA key bits:
+VMCFG_RSA_KEY_BITS="4096"
+
+# RSA key passphrase:
+VMCFG_RSA_KEY_PASSPHRASE=""
+
+# VM memory size:
+VMCFG_MEMSIZE="4096"
+
+# VM network NIC model:
+VMCFG_NET_NIC_MODEL="virtio"
+
+# Path to the Ansible playbook to setup virtual machine:
+VMCFG_SETUP_YML="${VMCFG_IMAGE%.*}.yml"

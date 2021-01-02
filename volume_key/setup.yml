@@ -1,0 +1,23 @@
+---
+- name: Setup Fedora based system for testing volume_key
+  hosts: all
+
+  vars:
+    vk_name: volume_key
+    vk_version: 0.3.12
+    vk_release: 2
+    vk_tarball: "{{ vk_name }}-{{ vk_version }}.tar.xz"
+
+    pkmaint_subjects:
+      - name: "{{ vk_name }}"
+        version: "{{ vk_version }}"
+        release: "{{ vk_release }}"
+        sources:
+          - source: https://releases.pagure.org/{{ vk_name }}/{{ vk_tarball }}
+            type: url
+            creates: "{{ vk_tarball }}"
+        patches:
+          - volume_key-0.3.12-support_LUKS2_and_more.patch
+
+  roles:
+    - pkmaint

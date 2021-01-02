@@ -1,0 +1,24 @@
+---
+- name: Setup Fedora based system for testing the latest OpenCV
+  hosts: all
+  vars_files:
+    - {{ lookup('env', 'VMCFG_ANSIBLE_VARS') }}
+
+#  include_vars:
+#    - "{{ lookup(env, 'HOME') }}/.vmtools/images/{{ lookup(env, '') }}.yml"
+
+  tasks:
+    - name: Debug
+      debug:
+        msg: "{{ lookup('env', 'VMCFG_IMAGE') }}"
+
+#    - name: Setup repositories
+#      yum_repository:
+#        name: "{{ item.name }}"
+#        description: "{{ item.description }}"
+#        baseurl: "{{ item.baseurl }}"
+#        enabled: true
+#        gpgcheck: false
+#        file: "/etc/yum.repos.d/{{ item.name }}"
+#      loop:
+        #

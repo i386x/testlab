@@ -1,0 +1,175 @@
+# Define `python3_sitearch' if there is no one:
+%{!?python3_sitearch:%global python3_sitearch %(%{__python3} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
+
+# Enable Python 3 in Fedora and RHEL > 7 as default:
+%if 0%{?fedora} || 0%{?rhel} > 7
+# Add `--without python3' option (enable python3 by default):
+%bcond_without python3
+%else
+# Add `--with python3' option (disable python3 by default):
+%bcond_with python3
+%endif
+
+# Drop Python 2 in Fedora >= 30 and RHEL > 7 as default:
+%if 0%{?fedora} >= 30 || 0%{?rhel} > 7
+%global drop_python2 1
+%global configure_with_python2 no
+%else
+# Define `python2_sitearch' if there is no one:
+%{!?python2_sitearch:%global python2_sitearch %(%{__python2} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
+%global configure_with_python2 yes
+%endif
+
+%if %{with python3}
+%global configure_with_python3 yes
+%else
+%global configure_with_python3 no
+%endif
+
+# Additional configure options:
+%global with_pythons --with-python=%{configure_with_python2} --with-python3=%{?configure_with_python3}
+
+Summary: An utility for manipulating storage encryption keys and passphrases
+Name: {{ item.name }}
+Version: {{ item.version }}
+Release: {{ item.release }}%{?dist}
+# lib/{SECerrs,SSLerrs}.h are both licensed under MPLv1.1, GPLv2 and LGPLv2
+License: GPLv2 and (MPLv1.1 or GPLv2 or LGPLv2)
+Group: Applications/System
+URL: https://pagure.io/%{name}/
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
+
+{% for source in item.sources | selectattr('type', 'in', [ 'url', 'file' ]) %}
+Source{{ loop.index0 }}: {{ source.source }}
+{% endfor %}
+{% for patch in item.patches %}
+Patch{{ loop.index0 }}: {{ patch }}
+{% endfor %}
+BuildRequires: gcc
+BuildRequires: cryptsetup-luks-devel, gettext-devel, glib2-devel, /usr/bin/gpg2
+BuildRequires: gpgme-devel, libblkid-devel, nss-devel, python3-devel
+%if 0%{?drop_python2} < 1
+BuildRequires: python2-devel
+%endif
+# Needed by %%check:
+BuildRequires: nss-tools
+
+%global desc_common The main goal of the software is to allow restoring access to an encrypted\
+hard drive if the primary user forgets the passphrase.  The encryption key\
+back up can also be useful for extracting data after a hardware or software\
+failure that corrupts the header of the encrypted volume, or to access the\
+company data after an employee leaves abruptly.
+
+%global desc_app This package provides a command-line tool for manipulating storage volume\
+encryption keys and storing them separately from volumes.\
+\
+%{desc_common}
+
+%global desc_lib This package provides lib%{name}, a library for manipulating storage volume\
+encryption keys and storing them separately from volumes.\
+\
+%{desc_common}
+
+%global desc_python(V:) This package provides %%{-V:Python %%{-V*}}%%{!-V:Python} bindings for lib%{name}, a library for\
+manipulating storage volume encryption keys and storing them separately from\
+volumes.\
+\
+%{desc_common}\
+\
+%{name} currently supports only the LUKS volume encryption format.  Support\
+for other formats is possible, some formats are planned for future releases.
+
+%description
+%{desc_app}
+
+%package devel
+Summary: A library for manipulating storage encryption keys and passphrases
+Group: Development/Libraries
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
+
+%description devel
+%{desc_lib}
+
+%package libs
+Summary: A library for manipulating storage encryption keys and passphrases
+Group: System Environment/Libraries
+Requires: /usr/bin/gpg2
+
+%description libs
+%{desc_lib}
+
+%if 0%{?drop_python2} < 1
+%package -n python2-%{name}
+%{?python_provide:%python_provide python2-%{name}}
+Summary: Python bindings for lib%{name}
+Group: System Environment/Libraries
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
+
+%description -n python2-%{name}
+%desc_python
+%endif
+
+%if %{with python3}
+%package -n python3-%{name}
+%{?python_provide:%python_provide python3-%{name}}
+Summary: Python 3 bindings for lib%{name}
+Group: System Environment/Libraries
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
+
+%description -n python3-%{name}
+%desc_python -V 3
+%endif
+
+%prep
+%setup -q
+{% for _ in item.patches %}
+%patch{{ loop.index0 }} -p1
+{% endfor %}
+
+%build
+%configure %{?with_pythons}
+make %{?_smp_mflags}
+
+%install
+make install DESTDIR=$RPM_BUILD_ROOT INSTALL='install -p'
+
+# Remove libtool archive
+find %{buildroot} -type f -name "*.la" -delete
+
+%find_lang %{name}
+
+%check
+make check || { \
+echo "======================== ./test-suite.log ========================"; \
+cat ./test-suite.log; \
+echo "=================================================================="; \
+exit 1; \
+}
+
+%ldconfig_scriptlets libs
+
+%files
+%doc README contrib
+%{_bindir}/%{name}
+%{_mandir}/man8/%{name}.8*
+
+%files devel
+%{_includedir}/%{name}
+%{_libdir}/lib%{name}.so
+
+%files libs -f %{name}.lang
+%doc AUTHORS COPYING ChangeLog NEWS
+%{_libdir}/lib%{name}.so.*
+
+%if 0%{?drop_python2} < 1
+%files -n python2-%{name}
+%{python2_sitearch}/_%{name}.so
+%{python2_sitearch}/%{name}.py*
+%endif
+
+%if %{with python3}
+%files -n python3-%{name}
+%{python3_sitearch}/_%{name}.so
+%{python3_sitearch}/%{name}.py*
+%{python3_sitearch}/__pycache__/%{name}.*
+%endif
