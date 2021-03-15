@@ -1,0 +1,33 @@
+# Core Build Dependencies:
+build = autoconf, automake, bash, binutils, bzip2, cmake, coreutils, cpio,
+        diffutils, findutils, gawk, gcc, gcc-c++, grep, gzip, info, make,
+        patch, perl, python3.9, sed, shadow-utils, swig, tar, unzip,
+        util-linux, which, xz
+
+# Utility & System Libraries:
+libs = boost-python3, check, check-devel, libunwind-devel, lockdev
+
+# Databases:
+db = libpq, mariadb-connector-c, mariadb-connector-c-config
+
+# Desktop Evergreens:
+gfxbase = cairo-devel, fribidi-devel, glib2, gstreamer1-devel,
+          gstreamer1-plugins-base-devel, jasper-devel, libexif, libexif-devel,
+          libgphoto2, libgphoto2-devel, libjpeg-turbo-devel, libpng,
+          libtiff-devel, libwebp-devel, openjpeg2-devel, openjpeg2-tools,
+          pango-devel
+media = libogg-devel, libv4l, libv4l-devel, libvorbis-devel, mesa-dri-drivers,
+        mesa-filesystem, mesa-libGLU, mesa-libGLU-devel
+xorg = xorg-x11-drv-dummy, xorg-x11-drv-libinput, xorg-x11-server-Xorg,
+       xorg-x11-server-common
+wayland = wayland-devel
+desktop = @gfxbase, @media, @xorg, @wayland
+
+# Interfaces:
+ifaces = libraw1394
+
+# Java Stack:
+java = ant, ant-lib, javapackages-tools
+
+# Exclude these from all package dependencies:
+@build, @libs, @db, @desktop, @ifaces, @java
