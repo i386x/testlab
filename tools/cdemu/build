@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# File:    ./tools/cdemu/build
+# Author:  Jiří Kučera <sanczes AT gmail.com>
+# Date:    2021-10-31 16:26:33 +0100
+# Project: Testing Laboratory
+# Brief:   Build cdemu
+#
+# SPDX-License-Identifier: MIT
+#
+
+set -euo pipefail
+
+function __create_Dockerfile() {
+  local _yum="${C_YUM:yum}"
+
+  {
+    echo -e "FROM ${C_IMAGE}"
+    echo -e "LABEL description=\"cdemu builder\""
+    echo -e "MAINTAINER ${C_MAINTAINER}"
+    echo -e "RUN ${_yum} install -y rpmbuild && \\"
+    echo -e "    ${_yum} install -y gcc kernel-headers && \\"
+    echo -e "    ${_yum} clean all"
+    echo -e ""
+    echo -e "USER ${C_USER}"
+  } > "${1}/Dockerfile"
+}
